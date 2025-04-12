@@ -6,14 +6,6 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 export const extractScheduleFromResponse = (rawResponse: string): string[] => {
-  const plainTextBlock = rawResponse.match(/```python([\s\S]*?)```/);
-
-  if (!plainTextBlock) {
-    return [];
-  }
-
-  return plainTextBlock[1]
-    .split("\n")
-    .map(line => line.trim().replace(/"/g, ''))
-    .filter(line => line.length > 0);
+  return JSON.parse(rawResponse)
+    .map((line:string) => line.trim().replace(/"/g, ''))
 }

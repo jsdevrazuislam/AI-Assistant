@@ -10,14 +10,27 @@ const client = new OpenAI({
 
 
 const taskPrompt = (tasks: Task[]) => `
-আমার আজকের কাজগুলো নিচে দেওয়া হলো:
+তুমি একজন দক্ষ টাইম ম্যানেজমেন্ট কোচ।
+
+আমার আজকের কাজগুলোর একটি তালিকা নিচে দেওয়া হলো:
 
 ${tasks.map((task, i) =>
-  `${i + 1}. কাজের নাম: ${task.title || "Unnamed Task"} - প্রাধান্য: ${task.priority || "Medium"}`
+  `${i + 1}. কাজের নাম: ${task.title || "Unnamed Task"} — প্রাধান্য (Priority): ${task.priority || "Medium"}`
 ).join("\n")}
 
-এই কাজগুলো দিয়ে একটা পুরো দিনের জন্য কার্যকরী টাইম শিডিউল সাজাও। Deep work, break, light task, meeting সব include করো।
-Schedule gula array of strings হিসেবে দাও।
+এখন উপরোক্ত কাজগুলোকে ভিত্তি করে সকাল ৮টা থেকে রাত ১০টা পর্যন্ত একটি কার্যকরী টাইম শিডিউল তৈরি করো।  
+শিডিউলে নিচের বিষয়গুলো অন্তর্ভুক্ত করতে হবে:
+
+- Deep work block (গুরুত্বপূর্ণ কাজে ফোকাস করার জন্য)
+- Light task block (সহজ কাজ)
+- Break ও Lunch
+- যদি প্রাসঙ্গিক হয়, ছোট ছোট মিটিং টাইম
+- Task priority অনুযায়ী কাজ সাজানো
+
+**Output Format:**  
+একটি টাইম শিডিউল তৈরি করো যা Array of Strings আকারে থাকবে।  
+
+শুধু Array of Strings রিটার্ন করো, ব্যাখ্যার প্রয়োজন নেই।
 `;
 
 export const createFinancePrompt = (income: FinanceIncome[], expenses: Expenses[]) => {
@@ -61,7 +74,6 @@ export const generateAISchedule = async (tasks: Task[]) => {
     max_tokens: 1024
   });
 
-  console.log(response)
 
   const schedule = extractScheduleFromResponse(response.choices?.[0]?.message?.content ?? '');
   return schedule;
@@ -195,3 +207,235 @@ export async function generateMealPlanAi(dietType: string, budget: string, timeC
     groceryList,
   };
 }
+
+
+export async function generateRecipeSuggestionsPrompt() {
+  
+  const prompt =  `
+  তুমি একজন পেশাদার শেফ এবং নিউট্রিশন এক্সপার্ট।
+  
+  একজন ব্যবহারকারীর রেসিপি পছন্দ: "কম ক্যালোরির ভেজ খাবার পছন্দ করি"
+  
+  এই তথ্য অনুযায়ী ৫টি স্বাস্থ্যকর এবং সহজ রেসিপির সাজেশন দাও।  
+  প্রত্যেকটি রেসিপি একটি object হবে যার মধ্যে থাকবে:
+  - title: রেসিপির নাম (বাংলায়)
+  - description: রেসিপিটি কীভাবে তৈরি করা যায় তার সংক্ষিপ্ত বর্ণনা
+  
+  **Output Format:**  
+  একটি Array of Objects রিটার্ন করো যেমন:
+  [
+    { "title": "সবজি খিচুড়ি", "description": "চাল, ডাল ও মিক্সড সবজি দিয়ে সহজে রান্না করা যায়" },
+    ...
+  ]
+  
+  শুধু এই array টা রিটার্ন করো, ব্যাখ্যা বা অন্য কিছু নয়।`
+
+  const response = await client.chat.completions.create({
+    model: "meta-llama/llama-4-maverick:free",
+    messages: [
+      { role: "system", content: "তুমি একজন পেশাদার শেফ এবং নিউট্রিশন এক্সপার্ট" },
+      { role: "user", content: prompt }
+    ],
+    temperature: 1,
+    max_tokens: 1024
+  });
+
+  const raw = response.choices?.[0]?.message?.content ?? '';
+  return JSON.parse(raw)
+}
+
+export async function generateNutritionTipsPrompt() {
+
+  const prompt = `
+  তুমি একজন পেশাদার নিউট্রিশনিস্ট।
+
+  আমি চাই ৫টি গুরুত্বপূর্ণ Healthy Eating Tips, যেগুলো একজন সাধারণ মানুষ তার দৈনন্দিন জীবনে অনুসরণ করতে পারে।
+
+  **Output Format:**  
+  একটি Array of Strings রিটার্ন করো, প্রত্যেকটি টিপস বাংলায় হবে।  
+  উদাহরণ:
+  [
+    "প্রতিদিন ৮ গ্লাস পানি পান করুন",
+    "প্রতিদিন অন্তত একটি ফল খান",
+    ...
+  ]
+
+  শুধু এই array টা রিটার্ন করো, ব্যাখ্যা বা অন্য কিছু নয়।`
+
+  const response = await client.chat.completions.create({
+    model: "meta-llama/llama-4-maverick:free",
+    messages: [
+      { role: "system", content: "তুমি একজন পেশাদার নিউট্রিশনিস্ট" },
+      { role: "user", content: prompt }
+    ],
+    temperature: 1,
+    max_tokens: 1024
+  });
+
+  const raw = response.choices?.[0]?.message?.content ?? '';
+  return JSON.parse(raw)
+}
+
+export async function analyzeTextDocument(documentText: string) {
+  const prompt = `
+তুমি একজন বুদ্ধিমান ডকুমেন্ট বিশ্লেষক। আমি তোমাকে একটি ডকুমেন্টের লেখা দেবো, এবং তুমি তার উপর ভিত্তি করে বিশ্লেষণ করে নিচের ফরম্যাটে উত্তর দিবে:
+
+# Document Analysis
+
+## Summary
+লিখাটির সারমর্ম বাংলায় ব্যাখ্যা করো।
+
+## Key Points
+- মূল বিষয়বস্তু গুলোর পয়েন্ট আকারে উল্লেখ করো
+- ...
+
+## Suggestions
+1. লেখাটি উন্নত করার জন্য ৩-৫ টি কার্যকরী পরামর্শ দাও
+2. পরামর্শগুলো খুব নির্দিষ্ট ও ব্যবহারযোগ্য হওয়া উচিত
+
+এই হলো লেখাটি:
+"""
+${documentText}
+"""
+`;
+
+const response = await client.chat.completions.create({
+  model: "meta-llama/llama-4-maverick:free",
+  messages: [
+    { role: "system", content: "তুমি একজন বুদ্ধিমান ডকুমেন্ট বিশ্লেষক" },
+    { role: "user", content: prompt }
+  ],
+  temperature: 1,
+  max_tokens: 1024
+});
+
+const raw = response.choices?.[0]?.message?.content ?? '';
+return raw
+}
+
+
+export async function solveMathProblem(problemText: string) {
+  const prompt = `
+তুমি একজন অংক বিশেষজ্ঞ, এবং আমি তোমাকে একটি গণিত সমস্যার বিবরণ দিবো। তোমার কাজ হলো সমস্যাটিকে নিচের ফরম্যাটে সুন্দরভাবে বিশ্লেষণ করে সমাধান করা:
+
+# Step-by-Step Solution
+
+এই অংকটা স্টেপ বাই স্টেপ সমাধান:
+
+## Step 1: Identify the key variables and equations
+(এই ধাপে সমস্যার মূল রাশিগুলো শনাক্ত করো)
+
+## Step 2: Apply the appropriate mathematical principles
+(যে নিয়ম বা সূত্র প্রয়োগ করতে হবে তা লিখো)
+
+## Step 3: Solve step by step
+(এক ধাপে ধাপে সমাধান করো)
+
+## Answer:
+The solution is: [ফলাফল লিখো]
+
+## Explanation:
+[সমাধানটি কেন এমন হলো, তার ব্যাখ্যা বাংলায় লেখো]
+
+এই হলো সমস্যাটি:
+"""
+${problemText}
+"""
+`;
+
+const response = await client.chat.completions.create({
+  model: "meta-llama/llama-4-maverick:free",
+  messages: [
+    { role: "system", content: "তুমি একজন অংক বিশেষজ্ঞ" },
+    { role: "user", content: prompt }
+  ],
+  temperature: 1,
+  max_tokens: 1024
+});
+
+const raw = response.choices?.[0]?.message?.content ?? '';
+return raw
+}
+
+export async function generateEmailFromPrompt(input: string) {
+  const prompt = `
+তুমি একজন প্রফেশনাল ইমেইল লেখক। নিচে আমি একটি ইনপুট দিবো এবং তোমার কাজ হলো সেই ইনপুট অনুযায়ী একটি সম্পূর্ণ প্রফেশনাল ইমেইল লেখা।
+
+ইমেইল লেখার ফরম্যাট নিচের মতো হতে হবে:
+
+Subject: [ইমেইলের বিষয়]
+
+Dear Team,
+
+[ইমেইলের মূল বক্তব্য সুন্দরভাবে গুছিয়ে লেখো, যথাসম্ভব প্রফেশনাল এবং মানবিক টোনে। প্রয়োজন হলে পয়েন্ট আকারে action items দাও।]
+
+Looking forward to your response / collaboration.
+
+Best regards,  
+[Your Name]
+
+---
+
+এই হলো ইনপুটঃ  
+"""  
+${input}  
+"""
+`;
+
+const response = await client.chat.completions.create({
+  model: "meta-llama/llama-4-maverick:free",
+  messages: [
+    { role: "system", content: "তুমি একজন প্রফেশনাল ইমেইল লেখক" },
+    { role: "user", content: prompt }
+  ],
+  temperature: 1,
+  max_tokens: 1024
+});
+
+const raw = response.choices?.[0]?.message?.content ?? '';
+console.log(raw);
+
+return raw
+}
+
+export async function generateCodeWithExplanation(input: string) {
+  const prompt = `
+You are an expert software engineer and technical writer.
+
+Based on the following instruction, write the complete code with explanation.
+
+If the user does **not** mention the language, default to **Python**.
+
+If the user mentions a language (like JavaScript, C++, etc.), use that language.
+
+Format the output like this:
+
+\`\`\`[language]
+[code goes here]
+\`\`\`
+
+Then provide a paragraph explaining what the code does, how it works, and how it can be modified.
+
+---
+Here is the instruction:
+"""
+${input}
+"""
+`;
+
+const response = await client.chat.completions.create({
+  model: "meta-llama/llama-4-maverick:free",
+  messages: [
+    { role: "system", content: "You are an expert software engineer and technical writer" },
+    { role: "user", content: prompt }
+  ],
+  temperature: 1,
+  max_tokens: 1024
+});
+
+const raw = response.choices?.[0]?.message?.content ?? '';
+console.log(raw);
+
+return raw
+}
+

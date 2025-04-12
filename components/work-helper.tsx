@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
 import { FileText, Mail, Calculator, Code, Upload, Loader2 } from "lucide-react"
+import { analyzeTextDocument, generateCodeWithExplanation, generateEmailFromPrompt, solveMathProblem } from "@/lib/ai-helpers"
 
 export default function WorkHelper() {
   const [activeTab, setActiveTab] = useState("document")
@@ -17,148 +18,33 @@ export default function WorkHelper() {
   const [isProcessing, setIsProcessing] = useState(false)
   const [result, setResult] = useState<string | null>(null)
 
-  const processRequest = () => {
+  const processRequest = async () => {
     setIsProcessing(true)
     setResult(null)
 
-    // Simulate AI processing
-    setTimeout(() => {
-      let response = ""
+    let response =  await analyzeTextDocument(documentText)
 
-      switch (activeTab) {
+    switch (activeTab) {
         case "document":
-          response = `
-# Document Analysis
-
-## Summary
-The provided text appears to be about project management methodologies, specifically comparing Agile and Waterfall approaches.
-
-## Key Points
-- Agile methodology focuses on iterative development
-- Waterfall is a linear sequential approach
-- The document recommends Agile for projects with changing requirements
-- There's a section about team collaboration that could be expanded
-
-## Suggestions
-1. Add more specific examples of successful Agile implementations
-2. Include a comparison table for easier reference
-3. Consider adding a section on hybrid approaches
-4. The conclusion could be strengthened with more concrete recommendations
-          `
+          response = await analyzeTextDocument(documentText) 
           break
-
         case "math":
-          if (mathProblem.includes("2x + 3 = 7")) {
-            response = `
-# Step-by-Step Solution
-
-## Original equation:
-2x + 3 = 7
-
-## Step 1: Subtract 3 from both sides
-2x + 3 - 3 = 7 - 3
-2x = 4
-
-## Step 2: Divide both sides by 2
-2x ÷ 2 = 4 ÷ 2
-x = 2
-
-## Answer:
-x = 2
-
-## Verification:
-2(2) + 3 = 7
-4 + 3 = 7
-7 = 7 ✓
-            `
-          } else {
-            response = `
-# Step-by-Step Solution
-
-এই অংকটা স্টেপ বাই স্টেপ সমাধান:
-
-## Step 1: Identify the key variables and equations
-
-## Step 2: Apply the appropriate mathematical principles
-
-## Step 3: Solve step by step
-
-## Answer:
-The solution is [calculated answer]
-
-## Explanation:
-[Detailed explanation of the solution process]
-            `
-          }
-          break
-
+            response = await solveMathProblem(mathProblem) 
+             break
         case "email":
-          response = `
-Subject: Meeting Follow-up and Next Steps
-
-Dear Team,
-
-I hope this email finds you well. I'm writing to follow up on our meeting yesterday regarding the project timeline.
-
-As discussed, we've agreed to the following action items:
-
-1. Sarah will finalize the design mockups by Friday, April 15
-2. John will set up the development environment by Monday, April 18
-3. The team will review the initial prototype during our next meeting on Wednesday, April 20
-
-Please let me know if you have any questions or concerns about these deadlines. I've attached the meeting minutes for your reference.
-
-Looking forward to our continued collaboration.
-
-Best regards,
-[Your Name]
-          `
+          response =  await generateEmailFromPrompt(emailPrompt) 
           break
 
         case "code":
-          response = `
-\`\`\`python
-def fibonacci(n):
-    """
-    Calculate the Fibonacci sequence up to the nth term.
-    
-    Args:
-        n: A positive integer
-        
-    Returns:
-        A list containing the Fibonacci sequence up to the nth term
-    """
-    if n <= 0:
-        return []
-    elif n == 1:
-        return [0]
-    elif n == 2:
-        return [0, 1]
-    
-    fib = [0, 1]
-    for i in range(2, n):
-        fib.append(fib[i-1] + fib[i-2])
-    
-    return fib
-
-# Example usage
-result = fibonacci(10)
-print(result)  # Output: [0, 1, 1, 2, 3, 5, 8, 13, 21, 34]
-\`\`\`
-
-This function calculates the Fibonacci sequence up to the nth term. The Fibonacci sequence is a series of numbers where each number is the sum of the two preceding ones, usually starting with 0 and 1.
-
-You can modify this function to start with different values or to return only the nth term if needed.
-          `
+          response = await generateCodeWithExplanation(codePrompt) 
           break
 
         default:
           response = "Please select a category and provide input for analysis."
-      }
+    }
 
-      setResult(response)
-      setIsProcessing(false)
-    }, 2000)
+    setResult(response)
+    setIsProcessing(false)
   }
 
   return (
@@ -218,10 +104,6 @@ You can modify this function to start with different values or to return only th
                         ) : (
                           "Analyze Document"
                         )}
-                      </Button>
-                      <Button variant="outline" type="button">
-                        <Upload className="h-4 w-4 mr-2" />
-                        Upload File
                       </Button>
                     </div>
                   </div>
@@ -335,7 +217,7 @@ You can modify this function to start with different values or to return only th
                   <div>
                     <h3 className="font-medium mb-1">Document Analysis</h3>
                     <p className="text-sm text-slate-600 dark:text-slate-400">
-                      Upload or paste documents for AI to analyze, summarize, and provide suggestions.
+                      Paste documents for AI to analyze, summarize, and provide suggestions.
                     </p>
                   </div>
                 </div>

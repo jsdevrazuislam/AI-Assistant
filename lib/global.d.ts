@@ -17,3 +17,8 @@ interface Meal {
   interface MealPlan {
     days: DailyMealPlan[];
   }
+
+  interface Suggestions{
+    title: string,
+    description:string
+  }

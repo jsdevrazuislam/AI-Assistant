@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Button } from "@/components/ui/button"
@@ -8,7 +8,8 @@ import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Utensils, ShoppingCart, Clock, Brain, Loader2 } from "lucide-react"
-import { generateMealPlanAi } from "@/lib/ai-helpers"
+import { generateMealPlanAi, generateNutritionTipsPrompt, generateRecipeSuggestionsPrompt } from "@/lib/ai-helpers"
+import { ScrollArea } from "@/components/ui/scroll-area"
 
 export default function MealPlanner() {
   const [activeTab, setActiveTab] = useState("meal-plan")
@@ -16,16 +17,39 @@ export default function MealPlanner() {
   const [budget, setBudget] = useState("medium")
   const [timeConstraint, setTimeConstraint] = useState("medium")
   const [isGenerating, setIsGenerating] = useState(false)
-  const [mealPlan, setMealPlan] = useState<any>(null)
+  const [isSuggestions, setIsSuggestion] = useState(false)
+  const [nutritionLoading, setNutritionLoading] = useState(false)
+  const [mealPlan, setMealPlan] = useState<MealPlan | null>(null)
+  const [suggestions, setSuggestion] = useState<Suggestions[]>([])
   const [groceryList, setGroceryList] = useState<string[]>([])
+  const [nutritionTips, setNutritionTips] = useState<string[]>([])
 
   const generateMealPlan = async () => {
     setIsGenerating(true)
-    const { mealPlan, groceryList} = await generateMealPlanAi(dietType, budget, timeConstraint)
+    const { mealPlan, groceryList } = await generateMealPlanAi(dietType, budget, timeConstraint)
     setMealPlan(mealPlan)
     setGroceryList(groceryList)
     setIsGenerating(false)
   }
+
+  const generateRecipeSuggestions = async () => {
+    setIsSuggestion(true)
+    const data = await generateRecipeSuggestionsPrompt()
+    setSuggestion(data)
+    setIsSuggestion(false)
+  }
+
+  const generateRecipeNutritionTips = async () => {
+    setNutritionLoading(true)
+    const data = await generateNutritionTipsPrompt()
+    setNutritionTips(data)
+    setNutritionLoading(false)
+  }
+
+  useEffect(() =>{
+    generateRecipeSuggestions()
+    generateRecipeNutritionTips()
+  }, [])
 
   return (
     <div>
@@ -208,33 +232,36 @@ export default function MealPlanner() {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                <div className="p-3 rounded-lg border border-slate-200 dark:border-slate-700 flex items-start">
-                  <Brain className="h-5 w-5 text-amber-500 mr-3 mt-0.5" />
-                  <div>
-                    <p className="font-medium mb-1">ভেজিটেবল বিরিয়ানি</p>
-                    <p className="text-sm text-slate-600 dark:text-slate-400">
-                      তোমার পছন্দের সবজি দিয়ে বানানো এই বিরিয়ানি সহজেই বানাতে পারবে।
-                    </p>
-                  </div>
-                </div>
 
-                <div className="p-3 rounded-lg border border-slate-200 dark:border-slate-700 flex items-start">
-                  <Brain className="h-5 w-5 text-amber-500 mr-3 mt-0.5" />
-                  <div>
-                    <p className="font-medium mb-1">চিকেন স্টিক ফ্রাই</p>
-                    <p className="text-sm text-slate-600 dark:text-slate-400">
-                      মাত্র ২০ মিনিটে তৈরি করা যায় এই স্বাস্থ্যকর রেসিপি।
-                    </p>
-                  </div>
+              {isSuggestions ? (
+                <div className="flex flex-col items-center justify-center py-8">
+                  <Brain className="h-12 w-12 text-slate-300 animate-pulse mb-4" />
+                  <p className="text-slate-500 text-sm">AI is analyzing your suggestions...</p>
                 </div>
-
-                <div className="p-3 rounded-lg border border-slate-200 dark:border-slate-700 flex items-start">
-                  <Brain className="h-5 w-5 text-amber-500 mr-3 mt-0.5" />
-                  <div>
-                    <p className="font-medium mb-1">মাশরুম স্যুপ</p>
-                    <p className="text-sm text-slate-600 dark:text-slate-400">কম বাজেটে বানানো যায় এই পুষ্টিকর স্যুপ।</p>
+              ) : suggestions?.length > 0 ? (
+                <ScrollArea className="h-[250px]">
+                  <div className="space-y-3">
+                    {
+                      suggestions?.map((item) => (
+                        <div key={item.title} className="p-3 rounded-lg border border-slate-200 dark:border-slate-700 flex items-start">
+                          <Brain className="h-5 w-5 text-amber-500 mr-3 mt-0.5" />
+                          <div className="flex-1">
+                            <p className="font-medium mb-1">{item.title}</p>
+                            <p className="text-sm text-slate-600 dark:text-slate-400">
+                              {item.description}
+                            </p>
+                          </div>
+                        </div>
+                      ))
+                    }
                   </div>
+                </ScrollArea>
+              ) : (
+                <div className="flex flex-col items-center justify-center py-8">
+                  <p className="text-slate-500 text-sm">No meal suggestions recommendations yet</p>
                 </div>
+              )} 
+          
               </div>
             </CardContent>
           </Card>
@@ -245,16 +272,28 @@ export default function MealPlanner() {
               <CardDescription>Healthy eating advice</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
-                <div className="p-3 rounded-lg bg-amber-50 dark:bg-amber-900/20 border border-amber-100 dark:border-amber-800">
-                  <p className="text-sm">
-                    প্রতিদিন কমপক্ষে ৫ ধরনের ফল ও সবজি খাওয়ার চেষ্টা করো। এতে তোমার শরীরে ভিটামিন ও মিনারেলের চাহিদা পূরণ হবে।
-                  </p>
+              {nutritionLoading ? (
+                <div className="flex flex-col items-center justify-center py-8">
+                  <Brain className="h-12 w-12 text-slate-300 animate-pulse mb-4" />
+                  <p className="text-slate-500 text-sm">AI is analyzing your nutrition...</p>
                 </div>
-                <div className="p-3 rounded-lg bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-100 dark:border-emerald-800">
-                  <p className="text-sm">প্রোটিনের জন্য শুধু মাংস নয়, ডাল, বাদাম, ও দুগ্ধজাত খাবারও খাও।</p>
+              ) : nutritionTips.length > 0 ? (
+                <ScrollArea className="h-[250px]">
+                  <div className="space-y-3">
+                    {nutritionTips.map((item) => (
+                      <div key={item} className="p-3 rounded-lg bg-amber-50 dark:bg-amber-900/20 border border-amber-100 dark:border-amber-800">
+                        <p className="text-sm">
+                          {item.replace(/"/g, '')}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                </ScrollArea>
+              ) : (
+                <div className="flex flex-col items-center justify-center py-8">
+                  <p className="text-slate-500 text-sm">No meal planner recommendations yet</p>
                 </div>
-              </div>
+              )}
             </CardContent>
           </Card>
         </div>
