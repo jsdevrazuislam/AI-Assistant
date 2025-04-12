@@ -3,11 +3,12 @@
 import Link from "next/link"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { useAuth } from "@/lib/auth-context"
 import { Calendar, DollarSign, Utensils, FileText, MapPin, ArrowRight } from "lucide-react"
+import { useUser } from '@clerk/nextjs'
 
 export default function DashboardOverview() {
-  const { user } = useAuth()
+
+  const { user } = useUser()
 
   const features = [
     {
@@ -55,7 +56,7 @@ export default function DashboardOverview() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight">Welcome back, {user?.name}!</h1>
+        <h1 className="text-2xl font-bold tracking-tight">Welcome back, {`${user?.firstName} ${user?.lastName}`}!</h1>
         <p className="text-slate-500 dark:text-slate-400">
           Here's an overview of your AI Assistant tools and recent activity.
         </p>

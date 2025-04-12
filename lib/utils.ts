@@ -6,7 +6,7 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 export const extractScheduleFromResponse = (rawResponse: string): string[] => {
-  const plainTextBlock = rawResponse.match(/```plaintext([\s\S]*?)```/);
+  const plainTextBlock = rawResponse.match(/```python([\s\S]*?)```/);
 
   if (!plainTextBlock) {
     return [];

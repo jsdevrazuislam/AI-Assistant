@@ -3,14 +3,18 @@ import "./globals.css"
 import type { Metadata } from "next"
 import { Inter } from "next/font/google"
 import { ThemeProvider } from "@/components/theme-provider"
-import { AuthProvider } from "@/lib/auth-context"
+import {
+  ClerkProvider,
+} from '@clerk/nextjs'
+import { dark } from '@clerk/themes'
+
+
 
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
   title: "AI Assistant",
   description: "AI-powered tools for daily life, finances, meals, work, and local needs",
-    generator: 'v0.dev'
 }
 
 export default function RootLayout({
@@ -19,13 +23,17 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <ClerkProvider appearance={{
+      baseTheme: dark
+    }}>
+      <html lang="en" suppressHydrationWarning>
       <body className={inter.className}>
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
-          <AuthProvider>{children}</AuthProvider>
+          {children}
         </ThemeProvider>
       </body>
     </html>
+    </ClerkProvider>
   )
 }
 

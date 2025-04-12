@@ -5,18 +5,20 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent } from "@/components/ui/sheet"
-import { Avatar, AvatarFallback } from "@/components/ui/avatar"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Brain, Calendar, DollarSign, Utensils, FileText, MapPin, Menu, LogOut } from "lucide-react"
-import { useAuth } from "@/lib/auth-context"
+import { useUser, useClerk } from '@clerk/nextjs'
+
 
 interface DashboardLayoutProps {
   children: ReactNode
 }
 
 export default function DashboardLayout({ children }: DashboardLayoutProps) {
-  const { user, logout } = useAuth()
   const pathname = usePathname()
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+  const { signOut } = useClerk()
+  const { user } = useUser()
 
   const navigation = [
     {
@@ -89,7 +91,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
               </nav>
             </div>
             <div className="p-4 border-t border-slate-200 dark:border-slate-700">
-              <Button variant="ghost" className="w-full justify-start text-red-500" onClick={logout}>
+              <Button onClick={() => signOut({ redirectUrl: '/login' })} variant="ghost" className="w-full justify-start text-red-500">
                 <LogOut className="mr-3 h-5 w-5" />
                 Log out
               </Button>
@@ -127,14 +129,17 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
             <div className="flex items-center">
               <div>
                 <Avatar className="h-9 w-9">
+                  <AvatarImage src={user?.imageUrl} />
                   <AvatarFallback className="bg-emerald-100 text-emerald-700 dark:bg-emerald-900 dark:text-emerald-300">
-                    {user?.name.charAt(0).toUpperCase()}
+                    {user?.firstName?.slice(0,1)}
                   </AvatarFallback>
                 </Avatar>
               </div>
               <div className="ml-3">
-                <p className="text-sm font-medium text-slate-700 dark:text-slate-300">{user?.name}</p>
-                <Button variant="ghost" className="px-0 py-1 h-auto text-xs text-red-500" onClick={logout}>
+                <p className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                {`${user?.firstName} ${user?.lastName}`}
+                </p>
+                <Button onClick={() => signOut({ redirectUrl: '/login' })} variant="ghost" className="px-0 py-1 h-auto text-xs text-red-500">
                   Log out
                 </Button>
               </div>
@@ -161,9 +166,10 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
             </div>
             <div className="flex items-center">
               <Avatar className="h-8 w-8">
-                <AvatarFallback className="bg-emerald-100 text-emerald-700 dark:bg-emerald-900 dark:text-emerald-300">
-                  {user?.name.charAt(0).toUpperCase()}
-                </AvatarFallback>
+              <AvatarImage src={user?.imageUrl} />
+                  <AvatarFallback className="bg-emerald-100 text-emerald-700 dark:bg-emerald-900 dark:text-emerald-300">
+                    {user?.firstName?.slice(0,1)}
+                  </AvatarFallback>
               </Avatar>
             </div>
           </div>

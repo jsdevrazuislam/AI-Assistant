@@ -17,10 +17,10 @@ ${tasks.map((task, i) =>
 ).join("\n")}
 
 এই কাজগুলো দিয়ে একটা পুরো দিনের জন্য কার্যকরী টাইম শিডিউল সাজাও। Deep work, break, light task, meeting সব include করো।
-Schedule array of strings হিসেবে দাও।
+Schedule gula array of strings হিসেবে দাও।
 `;
 
-export const createFinancePrompt = (income: FinanceIncome[] , expenses:Expenses[]) => {
+export const createFinancePrompt = (income: FinanceIncome[], expenses: Expenses[]) => {
   const incomeText = income.map(
     (i, idx) => `${idx + 1}. ${i.source} - ${i.amount} টাকা - ${i.date}`
   ).join("\n");
@@ -48,19 +48,20 @@ ${expenseText}
 
 export const generateAISchedule = async (tasks: Task[]) => {
 
-  return
 
   const prompt = taskPrompt(tasks);
- 
+
   const response = await client.chat.completions.create({
     messages: [
       { role: "system", content: "You are a productivity assistant." },
       { role: "user", content: prompt }
     ],
-    model: "gpt-4o",
+    model: "meta-llama/llama-4-maverick:free",
     temperature: 1,
     max_tokens: 1024
   });
+
+  console.log(response)
 
   const schedule = extractScheduleFromResponse(response.choices?.[0]?.message?.content ?? '');
   return schedule;
@@ -70,17 +71,16 @@ export const generateAISchedule = async (tasks: Task[]) => {
 
 export async function generateProductivityTip(tasks: Task[]): Promise<string> {
 
-  return
-
-  
   const response = await client.chat.completions.create({
     messages: [
       { role: "system", content: "You are a productivity expert." },
-      { role: "user", content: `আমার আজকের কাজগুলোঃ \n${tasks.map((task, i) =>
-        `${i + 1}. কাজের নাম: ${task.title || "Unnamed Task"} - প্রাধান্য: ${task.priority || "Medium"}`
-      ).join("\n")}\n\nএই কাজগুলোর ওপর ভিত্তি করে আমাকে ১টা কার্যকরী প্রোডাক্টিভিটি টিপস দাও।` }
+      {
+        role: "user", content: `আমার আজকের কাজগুলোঃ \n${tasks.map((task, i) =>
+          `${i + 1}. কাজের নাম: ${task.title || "Unnamed Task"} - প্রাধান্য: ${task.priority || "Medium"}`
+        ).join("\n")}\n\nএই কাজগুলোর ওপর ভিত্তি করে আমাকে ১টা কার্যকরী প্রোডাক্টিভিটি টিপস দাও।`
+      }
     ],
-    model: "gpt-4o",
+    model: "meta-llama/llama-4-maverick:free",
     temperature: 0.9,
     max_tokens: 256
   });
@@ -88,15 +88,14 @@ export async function generateProductivityTip(tasks: Task[]): Promise<string> {
   return response.choices?.[0]?.message?.content ?? '';
 }
 
-export async function generateFinancialTips(income: FinanceIncome[] , expenses:Expenses[]): Promise<string[]> {
-  
-  return
+export async function generateFinancialTips(income: FinanceIncome[], expenses: Expenses[]): Promise<string[]> {
+
   const response = await client.chat.completions.create({
     messages: [
       { role: "system", content: "You are a Financial Advisor expert." },
-      { role: "user", content: createFinancePrompt(income, expenses)}
+      { role: "user", content: createFinancePrompt(income, expenses) }
     ],
-    model: "gpt-4o",
+    model: "meta-llama/llama-4-maverick:free",
     temperature: 0.9,
     max_tokens: 256
   });
@@ -105,20 +104,20 @@ export async function generateFinancialTips(income: FinanceIncome[] , expenses:E
   const rawResponse = response.choices?.[0]?.message?.content ?? '';
 
   try {
-  suggestions = JSON.parse(rawResponse);
+    suggestions = JSON.parse(rawResponse);
   } catch (err) {
     suggestions = rawResponse
-      .replace(/^\[|\]$/g, "") 
-      .split(/"\s*,\s*"/) 
-      .map(line => line.replace(/^"|"$/g, "").trim()) 
+      .replace(/^\[|\]$/g, "")
+      .split(/"\s*,\s*"/)
+      .map(line => line.replace(/^"|"$/g, "").trim())
       .filter(Boolean);
-}
+  }
 
   return suggestions;
 }
 
 
-export async function generateMealPlanAi(dietType:string, budget:string, timeConstraint:string): Promise<{
+export async function generateMealPlanAi(dietType: string, budget: string, timeConstraint: string): Promise<{
   mealPlan: MealPlan;
   groceryList: string[];
 }> {
@@ -126,7 +125,7 @@ export async function generateMealPlanAi(dietType:string, budget:string, timeCon
 একজন ব্যবহারকারীর জন্য একটি সাপ্তাহিক (৭ দিনের) মিল প্ল্যান তৈরি করো।
 
 - প্রতিদিন ব্রেকফাস্ট, লাঞ্চ এবং ডিনার থাকবে
-- প্রতিটি মিলের টাইম থাকবে (যেমন: ${timeConstraint === 'quick' ? 'Under 30 মিনিট' : timeConstraint === 'medium' ?  '30-60 মিনিট' : 'No time constraint'})
+- প্রতিটি মিলের টাইম থাকবে (যেমন: ${timeConstraint === 'quick' ? 'Under 30 মিনিট' : timeConstraint === 'medium' ? '30-60 মিনিট' : 'No time constraint'})
 - প্রতিটি মিল ${dietType} দিতে হবে
 - প্রতিটি মিলের বাজেট থাকবে ${budget} এর মধ্যে দিতে হবে
 
@@ -189,7 +188,7 @@ export async function generateMealPlanAi(dietType:string, budget:string, timeCon
     }
   }
 
-  
+
 
   return {
     mealPlan,

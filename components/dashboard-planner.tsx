@@ -66,14 +66,12 @@ export default function DashboardPlanner() {
   }
 
   const generateAIRecommendations = async () => {
-    if(tasks.length > 0) {
+    if (tasks.length > 0) {
       setIsLoading(true)
 
       try {
         const schedule = await generateAISchedule(tasks)
         const tip = await generateProductivityTip(tasks)
-
-
 
         setAiSchedule(schedule)
         setProductivityTip(tip)
@@ -248,7 +246,6 @@ export default function DashboardPlanner() {
         </div>
       </div>
 
-      {/* Voice Command Modal */}
       <VoiceCommandModal
         isOpen={isVoiceModalOpen}
         onClose={() => setIsVoiceModalOpen(false)}
