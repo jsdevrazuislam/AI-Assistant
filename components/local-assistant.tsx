@@ -22,7 +22,6 @@ export default function LocalAssistant() {
   const [searchQuery, setSearchQuery] = useState("")
   const [isSearching, setIsSearching] = useState(false)
   const [searchResults, setSearchResults] = useState<any[]>([])
-  const [isVoiceActive, setIsVoiceActive] = useState(false)
   const [activeTab, setActiveTab] = useState("search")
   const [userLocation, setUserLocation] = useState("Dhaka, Bangladesh")
 
@@ -35,30 +34,17 @@ export default function LocalAssistant() {
     const bounds = `90.3654,23.7964,90.4083,23.7621`; 
     // const bounds = `${lon - 0.02},${lat + 0.02},${lon + 0.02},${lat - 0.02}`; 
 
-
     setIsSearching(true)
     const results = await fetchLocalServices({
       serviceType: search ?? searchQuery,
-      bounds,
-      apiKey: process.env.NEXT_PUBLIC_MAP_API_KEY!
+      bounds
     });
-    
+    console.log(results)
     setSearchResults(results);
     setIsSearching(false)
   }
 
-  const handleVoiceSearch = () => {
-    setIsVoiceActive(true)
-    setTimeout(() => {
-      setSearchQuery("আমার কাছে সস্তায় ল্যাপটপ রিপেয়ার করে কে?")
-      setIsVoiceActive(false)
-
-      // Automatically search after voice input
-      setTimeout(() => {
-        handleSearch()
-      }, 500)
-    }, 2000)
-  }
+  
 
   return (
     <div>
