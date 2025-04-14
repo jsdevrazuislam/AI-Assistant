@@ -84,52 +84,7 @@ export default function DashboardOverview() {
         ))}
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <Card>
-          <CardHeader>
-            <CardTitle>Recent Activity</CardTitle>
-            <CardDescription>Your recent interactions with AI Assistant</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div className="flex items-start space-x-4">
-                <div
-                  className={`w-10 h-10 rounded-lg bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center`}
-                >
-                  <Calendar className="h-5 w-5 text-emerald-500" />
-                </div>
-                <div>
-                  <p className="font-medium">Added a new task to your planner</p>
-                  <p className="text-sm text-slate-500 dark:text-slate-400">Today at 10:30 AM</p>
-                </div>
-              </div>
-              <div className="flex items-start space-x-4">
-                <div
-                  className={`w-10 h-10 rounded-lg bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center`}
-                >
-                  <DollarSign className="h-5 w-5 text-blue-500" />
-                </div>
-                <div>
-                  <p className="font-medium">Updated your monthly budget</p>
-                  <p className="text-sm text-slate-500 dark:text-slate-400">Yesterday at 2:15 PM</p>
-                </div>
-              </div>
-              <div className="flex items-start space-x-4">
-                <div
-                  className={`w-10 h-10 rounded-lg bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center`}
-                >
-                  <Utensils className="h-5 w-5 text-amber-500" />
-                </div>
-                <div>
-                  <p className="font-medium">Generated a new meal plan</p>
-                  <p className="text-sm text-slate-500 dark:text-slate-400">2 days ago</p>
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
+      <Card>
           <CardHeader>
             <CardTitle>AI Insights</CardTitle>
             <CardDescription>Personalized recommendations for you</CardDescription>
@@ -157,7 +112,6 @@ export default function DashboardOverview() {
             </div>
           </CardContent>
         </Card>
-      </div>
     </div>
   )
 }
