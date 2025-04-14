@@ -6,7 +6,17 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Badge } from "@/components/ui/badge"
-import { MapPin, Search, Mic, Star, Phone, Clock, Loader2, Navigation } from "lucide-react"
+import { MapPin, Search, Star, Phone, Clock, Loader2, Navigation } from "lucide-react"
+import { fetchLocalServices, getUserLocation, jsonData } from "@/lib/api"
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 
 export default function LocalAssistant() {
   const [searchQuery, setSearchQuery] = useState("")
@@ -16,78 +26,29 @@ export default function LocalAssistant() {
   const [activeTab, setActiveTab] = useState("search")
   const [userLocation, setUserLocation] = useState("Dhaka, Bangladesh")
 
-  const handleSearch = () => {
-    if (!searchQuery.trim()) return
+  const handleSearch = async (search?:string) => {
+
+    const position = await getUserLocation();
+    const lat = position.coords.latitude;
+    const lon = position.coords.longitude;
+
+    const bounds = `90.3654,23.7964,90.4083,23.7621`; 
+    // const bounds = `${lon - 0.02},${lat + 0.02},${lon + 0.02},${lat - 0.02}`; 
+
 
     setIsSearching(true)
-    setSearchResults([])
-
-    // Simulate search results
-    setTimeout(() => {
-      const results = [
-        {
-          id: 1,
-          name: "Digital Tech Solutions",
-          category: "Computer Repair",
-          rating: 4.8,
-          reviews: 124,
-          distance: "1.2 km",
-          address: "Block A, Banani, Dhaka",
-          phone: "+880 1712-345678",
-          hours: "Open until 8:00 PM",
-          services: ["Laptop Repair", "Phone Repair", "Data Recovery"],
-          price: "$$",
-        },
-        {
-          id: 2,
-          name: "Quick Fix Electronics",
-          category: "Electronics Repair",
-          rating: 4.5,
-          reviews: 89,
-          distance: "2.4 km",
-          address: "Gulshan 2, Dhaka",
-          phone: "+880 1812-345678",
-          hours: "Open until 9:00 PM",
-          services: ["Phone Repair", "Computer Repair", "Tablet Repair"],
-          price: "$",
-        },
-        {
-          id: 3,
-          name: "Tech Guru Services",
-          category: "Computer Repair",
-          rating: 4.7,
-          reviews: 156,
-          distance: "3.1 km",
-          address: "Mohakhali DOHS, Dhaka",
-          phone: "+880 1912-345678",
-          hours: "Open until 7:00 PM",
-          services: ["Laptop Repair", "Desktop Repair", "Software Installation"],
-          price: "$$$",
-        },
-        {
-          id: 4,
-          name: "Mobile Care Center",
-          category: "Phone Repair",
-          rating: 4.3,
-          reviews: 67,
-          distance: "1.8 km",
-          address: "Mirpur 10, Dhaka",
-          phone: "+880 1612-345678",
-          hours: "Open until 10:00 PM",
-          services: ["Screen Replacement", "Battery Replacement", "Water Damage Repair"],
-          price: "$$",
-        },
-      ]
-
-      setSearchResults(results)
-      setIsSearching(false)
-    }, 1500)
+    const results = await fetchLocalServices({
+      serviceType: search ?? searchQuery,
+      bounds,
+      apiKey: process.env.NEXT_PUBLIC_MAP_API_KEY!
+    });
+    
+    setSearchResults(results);
+    setIsSearching(false)
   }
 
   const handleVoiceSearch = () => {
     setIsVoiceActive(true)
-
-    // Simulate voice recognition
     setTimeout(() => {
       setSearchQuery("আমার কাছে সস্তায় ল্যাপটপ রিপেয়ার করে কে?")
       setIsVoiceActive(false)
@@ -117,34 +78,28 @@ export default function LocalAssistant() {
               <Tabs value={activeTab} onValueChange={setActiveTab}>
                 <TabsList className="mb-4">
                   <TabsTrigger value="search">Search</TabsTrigger>
-                  <TabsTrigger value="map">Map</TabsTrigger>
-                  <TabsTrigger value="favorites">Favorites</TabsTrigger>
                 </TabsList>
-
                 <TabsContent value="search">
                   <div className="space-y-6">
                     <div className="flex items-center space-x-2">
                       <div className="relative flex-1">
-                        <Input
-                          placeholder="Search for services (e.g., laptop repair, doctor, electrician)"
-                          value={searchQuery}
-                          onChange={(e) => setSearchQuery(e.target.value)}
-                          onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-                          className="pr-10"
-                        />
-                        {searchQuery && (
-                          <button
-                            className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
-                            onClick={() => setSearchQuery("")}
-                          >
-                            ×
-                          </button>
-                        )}
+                      <Select onValueChange={(value) => setSearchQuery(value)}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select for services" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectGroup>
+                            <SelectLabel>Select for services</SelectLabel>
+                            {
+                              jsonData?.map((item) => (
+                                <SelectItem value={item.value}>{item.label}</SelectItem>
+                              ))
+                            }
+                          </SelectGroup>
+                        </SelectContent>
+                      </Select>
                       </div>
-                      <Button variant="outline" onClick={handleVoiceSearch} disabled={isVoiceActive}>
-                        {isVoiceActive ? <Loader2 className="h-4 w-4 animate-spin" /> : <Mic className="h-4 w-4" />}
-                      </Button>
-                      <Button onClick={handleSearch} disabled={isSearching || !searchQuery.trim()}>
+                      <Button onClick={() => handleSearch()} disabled={isSearching || !searchQuery.trim()}>
                         {isSearching ? (
                           <>
                             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -249,20 +204,6 @@ export default function LocalAssistant() {
                     )}
                   </div>
                 </TabsContent>
-
-                <TabsContent value="map">
-                  <div className="flex flex-col items-center justify-center py-12 border rounded-md bg-slate-50 dark:bg-slate-800">
-                    <MapPin className="h-12 w-12 text-slate-300 mb-4" />
-                    <p className="text-slate-500">Map view will be available soon</p>
-                  </div>
-                </TabsContent>
-
-                <TabsContent value="favorites">
-                  <div className="flex flex-col items-center justify-center py-12 border rounded-md bg-slate-50 dark:bg-slate-800">
-                    <Star className="h-12 w-12 text-slate-300 mb-4" />
-                    <p className="text-slate-500">Your favorite places will appear here</p>
-                  </div>
-                </TabsContent>
               </Tabs>
             </CardContent>
           </Card>
@@ -276,27 +217,27 @@ export default function LocalAssistant() {
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-2 gap-2">
-                <Button variant="outline" className="justify-start" onClick={() => setSearchQuery("ডাক্তার")}>
+                <Button variant="outline" className="justify-start" onClick={() => handleSearch("healthcare.hospital")}>
                   <MapPin className="h-4 w-4 mr-2 text-rose-500" />
                   ডাক্তার
                 </Button>
-                <Button variant="outline" className="justify-start" onClick={() => setSearchQuery("ইলেকট্রিশিয়ান")}>
+                <Button variant="outline" className="justify-start" onClick={() => handleSearch("rental.car")}>
                   <MapPin className="h-4 w-4 mr-2 text-amber-500" />
                   ইলেকট্রিশিয়ান
                 </Button>
-                <Button variant="outline" className="justify-start" onClick={() => setSearchQuery("প্লাম্বার")}>
+                <Button variant="outline" className="justify-start" onClick={() => handleSearch("service.financial")}>
                   <MapPin className="h-4 w-4 mr-2 text-blue-500" />
                   প্লাম্বার
                 </Button>
-                <Button variant="outline" className="justify-start" onClick={() => setSearchQuery("ফোন রিপেয়ার")}>
+                <Button variant="outline" className="justify-start" onClick={() => handleSearch("emergency.phone")}>
                   <MapPin className="h-4 w-4 mr-2 text-emerald-500" />
                   ফোন রিপেয়ার
                 </Button>
-                <Button variant="outline" className="justify-start" onClick={() => setSearchQuery("রেস্টুরেন্ট")}>
+                <Button variant="outline" className="justify-start" onClick={() => handleSearch("catering.restaurant.asian")}>
                   <MapPin className="h-4 w-4 mr-2 text-purple-500" />
                   রেস্টুরেন্ট
                 </Button>
-                <Button variant="outline" className="justify-start" onClick={() => setSearchQuery("গ্রোসারি")}>
+                <Button variant="outline" className="justify-start" onClick={() => handleSearch("commercial.supermarket")}>
                   <MapPin className="h-4 w-4 mr-2 text-green-500" />
                   গ্রোসারি
                 </Button>

@@ -6,8 +6,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
-import { FileText, Mail, Calculator, Code, Upload, Loader2 } from "lucide-react"
+import { FileText, Mail, Calculator, Code, Loader2 } from "lucide-react"
 import { analyzeTextDocument, generateCodeWithExplanation, generateEmailFromPrompt, solveMathProblem } from "@/lib/ai-helpers"
+import { ScrollArea } from "@/components/ui/scroll-area"
+import { formatDistanceToNow } from 'date-fns'
+
 
 export default function WorkHelper() {
   const [activeTab, setActiveTab] = useState("document")
@@ -17,6 +20,7 @@ export default function WorkHelper() {
   const [codePrompt, setCodePrompt] = useState("")
   const [isProcessing, setIsProcessing] = useState(false)
   const [result, setResult] = useState<string | null>(null)
+  const [recentQueries, setRecentQueries] = useState<{title:string, description:string, createdAt: string}[]>([])
 
   const processRequest = async () => {
     setIsProcessing(true)
@@ -26,16 +30,20 @@ export default function WorkHelper() {
 
     switch (activeTab) {
         case "document":
+          setRecentQueries((prev) => [...prev, { title: 'Document Analysis', description: documentText, createdAt: new Date().toISOString()}])
           response = await analyzeTextDocument(documentText) 
           break
         case "math":
+            setRecentQueries((prev) => [...prev, { title: 'Math Problem', description: mathProblem, createdAt: new Date().toISOString()}])
             response = await solveMathProblem(mathProblem) 
              break
         case "email":
+          setRecentQueries((prev) => [...prev, { title: 'Email Draft', description: emailPrompt, createdAt: new Date().toISOString()}])
           response =  await generateEmailFromPrompt(emailPrompt) 
           break
 
         case "code":
+          setRecentQueries((prev) => [...prev, { title: 'Code Generator', description: codePrompt, createdAt: new Date().toISOString()}])
           response = await generateCodeWithExplanation(codePrompt) 
           break
 
@@ -267,46 +275,30 @@ export default function WorkHelper() {
               <CardDescription>Your recent AI work helper requests</CardDescription>
             </CardHeader>
             <CardContent>
+            <ScrollArea className="h-[250px]">
               <div className="space-y-4">
-                <div className="p-3 rounded-lg border border-slate-200 dark:border-slate-700">
+                {
+                  recentQueries?.length > 0 ? recentQueries?.map((query) => (
+                    <div key={query.title} className="p-3 rounded-lg border border-slate-200 dark:border-slate-700">
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center">
                       <Calculator className="h-4 w-4 text-purple-500 mr-2" />
-                      <span className="font-medium">Math Problem</span>
+                      <span className="font-medium">{query.title}</span>
                     </div>
-                    <span className="text-xs text-slate-500">2 hours ago</span>
+                    <span className="text-xs text-slate-500">
+                      {formatDistanceToNow(new Date(query.createdAt), { addSuffix: true })}
+                    </span>
                   </div>
                   <p className="text-sm text-slate-600 dark:text-slate-400">
-                    Solve the quadratic equation: x² - 5x + 6 = 0
+                    {query.description}
                   </p>
                 </div>
-
-                <div className="p-3 rounded-lg border border-slate-200 dark:border-slate-700">
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center">
-                      <Mail className="h-4 w-4 text-purple-500 mr-2" />
-                      <span className="font-medium">Email Draft</span>
-                    </div>
-                    <span className="text-xs text-slate-500">Yesterday</span>
+                  )) : <div className="flex flex-col items-center justify-center py-8">
+                  <p className="text-slate-500 text-sm">No Recent Queries yet</p>
                   </div>
-                  <p className="text-sm text-slate-600 dark:text-slate-400">
-                    Write a professional email requesting a deadline extension
-                  </p>
-                </div>
-
-                <div className="p-3 rounded-lg border border-slate-200 dark:border-slate-700">
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center">
-                      <FileText className="h-4 w-4 text-purple-500 mr-2" />
-                      <span className="font-medium">Document Analysis</span>
-                    </div>
-                    <span className="text-xs text-slate-500">3 days ago</span>
-                  </div>
-                  <p className="text-sm text-slate-600 dark:text-slate-400">
-                    Analyze project proposal document and provide feedback
-                  </p>
-                </div>
+                }
               </div>
+              </ScrollArea>
             </CardContent>
           </Card>
         </div>

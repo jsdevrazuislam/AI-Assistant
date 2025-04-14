@@ -10,7 +10,6 @@ import { Badge } from "@/components/ui/badge"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Mic, Plus, CalendarIcon, Clock } from "lucide-react"
 import TaskList from "@/components/task-list"
-import VoiceCommandModal from "@/components/voice-command-modal"
 import AIInsights from "@/components/ai-insights"
 import type { Task } from "@/lib/types"
 import { generateAISchedule, generateProductivityTip } from "@/lib/ai-helpers"
@@ -245,12 +244,6 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Voice Command Modal */}
-      <VoiceCommandModal
-        isOpen={isVoiceModalOpen}
-        onClose={() => setIsVoiceModalOpen(false)}
-        onCommand={handleVoiceCommand}
-      />
     </div>
   )
 }

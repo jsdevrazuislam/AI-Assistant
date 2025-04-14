@@ -2,7 +2,7 @@ export interface Task {
   id: string
   title: string
   completed: boolean
-  priority: "high" | "medium" | "low"
+  priority: string
   dueDate: string
   time: string
 }

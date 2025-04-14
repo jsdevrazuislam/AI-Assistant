@@ -8,18 +8,26 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { Mic, Plus, CalendarIcon, Clock } from "lucide-react"
+import {  Plus, CalendarIcon, Clock } from "lucide-react"
 import TaskList from "@/components/task-list"
-import VoiceCommandModal from "@/components/voice-command-modal"
 import AIInsights from "@/components/ai-insights"
 import type { Task } from "@/lib/types"
 import { generateAISchedule, generateProductivityTip } from "@/lib/ai-helpers"
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 
 
 export default function DashboardPlanner() {
   const [date, setDate] = useState<Date>(new Date())
   const [tasks, setTasks] = useState<Task[]>([])
-  const [isVoiceModalOpen, setIsVoiceModalOpen] = useState(false)
+  const [priority, setPriority] = useState<string>('')
   const [newTaskText, setNewTaskText] = useState("")
   const [aiSchedule, setAiSchedule] = useState<string[]>([])
   const [productivityTip, setProductivityTip] = useState("")
@@ -85,13 +93,13 @@ export default function DashboardPlanner() {
 
 
   const handleAddTask = () => {
-    if (!newTaskText.trim()) return
+    if (!newTaskText.trim() || !priority.trim()) return
 
     const newTask: Task = {
       id: Date.now().toString(),
       title: newTaskText,
       completed: false,
-      priority: "medium",
+      priority: priority,
       dueDate: date.toISOString().split("T")[0],
       time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
     }
@@ -99,34 +107,14 @@ export default function DashboardPlanner() {
     setTasks([...tasks, newTask])
     setNewTaskText("")
 
-    // Regenerate AI recommendations when tasks change
     generateAIRecommendations()
   }
 
-  const handleVoiceCommand = (command: string) => {
-    // Process voice command and add as a task
-    if (command) {
-      const newTask: Task = {
-        id: Date.now().toString(),
-        title: command,
-        completed: false,
-        priority: "medium",
-        dueDate: date.toISOString().split("T")[0],
-        time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-      }
-
-      setTasks([...tasks, newTask])
-
-      // Regenerate AI recommendations when tasks change
-      generateAIRecommendations()
-    }
-  }
 
   const toggleTaskCompletion = (taskId: string) => {
     const updatedTasks = tasks.map((task) => (task.id === taskId ? { ...task, completed: !task.completed } : task))
     setTasks(updatedTasks)
 
-    // Regenerate AI recommendations when tasks change
     generateAIRecommendations()
   }
 
@@ -217,13 +205,21 @@ export default function DashboardPlanner() {
                         onKeyDown={(e) => e.key === "Enter" && handleAddTask()}
                         className="flex-1"
                       />
+                       <Select onValueChange={(value) => setPriority(value)}>
+                        <SelectTrigger className="w-[180px]">
+                          <SelectValue placeholder="Select Priority" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectGroup>
+                            <SelectItem value="high">High</SelectItem>
+                            <SelectItem value="medium">Medium</SelectItem>
+                            <SelectItem value="low">Low</SelectItem>
+                          </SelectGroup>
+                        </SelectContent>
+                      </Select>
                       <Button onClick={handleAddTask}>
                         <Plus className="h-4 w-4 mr-2" />
                         Add
-                      </Button>
-                      <Button variant="outline" onClick={() => setIsVoiceModalOpen(true)}>
-                        <Mic className="h-4 w-4" />
-                        <span className="sr-only">Voice Command</span>
                       </Button>
                     </div>
 
@@ -245,12 +241,7 @@ export default function DashboardPlanner() {
           />
         </div>
       </div>
-
-      <VoiceCommandModal
-        isOpen={isVoiceModalOpen}
-        onClose={() => setIsVoiceModalOpen(false)}
-        onCommand={handleVoiceCommand}
-      />
+     
     </div>
   )
 }
