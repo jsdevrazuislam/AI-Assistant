@@ -17,8 +17,6 @@ import {
   Trash2,
   Download,
   MessageSquare,
-  Settings,
-  Sparkles,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { AnimatePresence, motion } from "framer-motion"
@@ -42,7 +40,7 @@ import {
 import { Badge } from "@/components/ui/badge"
 import { getAIResponse } from "@/lib/ai-helpers"
 import { availableModels } from "@/lib/dump"
-import Markdown from "react-markdown"
+import ChatFormatter from "./chat-formater"
 
 type Message = {
   id: string
@@ -547,5 +545,5 @@ function TypewriterEffect({ text }: { text: string }) {
     setCurrentIndex(0)
   }, [text])
 
-  return <Markdown>{displayedText}</Markdown>
+  return <ChatFormatter message={displayedText} />
 }

@@ -4,7 +4,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button"
 import { Brain, RefreshCw, Clock, Lightbulb } from "lucide-react"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import ReactMarkdown from "react-markdown"
 
 
 interface AIInsightsProps {
@@ -15,6 +14,7 @@ interface AIInsightsProps {
 }
 
 export default function AIInsights({ schedule, productivityTip, isLoading, onRefresh }: AIInsightsProps) {
+
   return (
     <>
       {/* AI Schedule Recommendations */}
@@ -72,12 +72,8 @@ export default function AIInsights({ schedule, productivityTip, isLoading, onRef
               <p className="text-slate-500 text-sm">Generating insight...</p>
             </div>
           ) : productivityTip ? (
-            <div className="p-3 rounded-lg border border-slate-200 dark:border-slate-700 flex flex-col items-start">
+            <div  dangerouslySetInnerHTML={{ __html: productivityTip }} className="p-3 rounded-lg border border-slate-200 dark:border-slate-700 flex flex-col items-start" />
               
-              <ReactMarkdown>
-              {productivityTip}
-            </ReactMarkdown>
-            </div>
           ) : (
             <p className="text-slate-500 text-sm text-center py-4">No productivity tips available</p>
           )}
