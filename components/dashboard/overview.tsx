@@ -3,7 +3,7 @@
 import Link from "next/link"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Calendar, DollarSign, Utensils, FileText, MapPin, ArrowRight } from "lucide-react"
+import { Calendar, DollarSign, Utensils, FileText, MapPin, ArrowRight, MessageSquare } from "lucide-react"
 import { useUser } from '@clerk/nextjs'
 
 export default function DashboardOverview() {
@@ -11,6 +11,14 @@ export default function DashboardOverview() {
   const { user } = useUser()
 
   const features = [
+    {
+      name: "AI Chat",
+      description: "Chat with your AI assistant about anything",
+      icon: MessageSquare,
+      color: "text-blue-500",
+      bgColor: "bg-blue-100 dark:bg-blue-900/30",
+      href: "/dashboard/chat",
+    },
     {
       name: "Smart Daily Planner",
       description: "Manage your schedule with AI-powered planning",

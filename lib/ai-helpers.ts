@@ -434,8 +434,25 @@ const response = await client.chat.completions.create({
 });
 
 const raw = response.choices?.[0]?.message?.content ?? '';
-console.log(raw);
 
 return raw
+}
+
+
+export const getAIResponse = async (input:string, id:string) =>{
+  const response = await client.chat.completions.create({
+    model: id,
+    messages: [
+      { role: "user", content: input }
+    ],
+    temperature: 1,
+    max_tokens: 2048
+  });
+
+  console.log(response, response.choices?.[0]?.message?.content)
+  
+  const raw = response.choices?.[0]?.message?.content ?? '';
+
+  return raw
 }
 

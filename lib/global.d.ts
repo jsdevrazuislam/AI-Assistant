@@ -155,3 +155,25 @@ interface Meal {
     coordinates?: (number)[] | null;
   }
   
+
+  type Message = {
+    id: string
+    content: string
+    role: "user" | "assistant"
+  }
+  
+  type Chat = {
+    id: string
+    title: string
+    messages: Message[]
+    createdAt: Date
+  }
+  
+
+type AIModel = {
+  id: string
+  name: string
+  description: string
+  icon: React.ReactNode
+  color: string
+}

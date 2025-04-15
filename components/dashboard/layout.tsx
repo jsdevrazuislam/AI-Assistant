@@ -6,7 +6,7 @@ import { usePathname } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent } from "@/components/ui/sheet"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Brain, Calendar, DollarSign, Utensils, FileText, MapPin, Menu, LogOut } from "lucide-react"
+import { Brain, Calendar, DollarSign, Utensils, FileText, MapPin, Menu, LogOut, MessageSquare } from "lucide-react"
 import { useUser, useClerk } from '@clerk/nextjs'
 
 
@@ -26,6 +26,12 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
       href: "/dashboard",
       icon: Brain,
       current: pathname === "/dashboard",
+    },
+    {
+      name: "AI Chat",
+      href: "/dashboard/chat",
+      icon: MessageSquare,
+      current: pathname === "/dashboard/chat",
     },
     {
       name: "Smart Planner",
