@@ -429,7 +429,7 @@ export default function ChatInterface() {
                               className={cn(
                                 "rounded-lg px-4 py-2 shadow-sm",
                                 message.role === "user"
-                                  ? "bg-slate-700 text-white dark:bg-slate-600"
+                                  ? "bg-green-700 text-white dark:bg-green-500"
                                   : "bg-white dark:bg-slate-700 dark:text-slate-100 border border-slate-200 dark:border-slate-600",
                               )}
                             >

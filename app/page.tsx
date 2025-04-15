@@ -1,3 +1,4 @@
+"use client"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -6,8 +7,12 @@ import { HeroSection } from "@/components/landing/hero-section"
 import { FeatureSection } from "@/components/landing/feature-section"
 import { TestimonialSection } from "@/components/landing/testimonial-section"
 import { CTASection } from "@/components/landing/cta-section"
+import { useUser } from '@clerk/nextjs'
 
 export default function HomePage() {
+
+  const { user } = useUser()
+
   return (
     <div className="flex flex-col min-h-screen">
       {/* Navigation */}
@@ -18,12 +23,18 @@ export default function HomePage() {
             <span className="font-bold text-xl">AI Assistant</span>
           </div>
           <div className="flex items-center space-x-4">
-            <Link href="/login">
-              <Button variant="ghost">Login</Button>
-            </Link>
-            <Link href="/register">
-              <Button>Register</Button>
-            </Link>
+            {
+              user ? <Link href="/dashboard">
+                <Button variant="ghost">Dashboard</Button>
+              </Link> : <>
+                <Link href="/login">
+                  <Button variant="ghost">Login</Button>
+                </Link>
+                <Link href="/register">
+                  <Button>Register</Button>
+                </Link>
+              </>
+            }
           </div>
         </div>
       </header>
